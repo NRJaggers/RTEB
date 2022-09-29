@@ -1,4 +1,11 @@
-
+/*********************************************************
+* File: imageViewer.cpp
+*
+* Description: Program using openCV to open an image in a window
+*
+* Author: Nathan Jaggers and Josh Rizzolo 
+*
+**********************************************************/
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
