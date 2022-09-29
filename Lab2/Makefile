@@ -2,7 +2,8 @@
 .PHONY: all clean
 
 #compiler and linker options
-CC = g++
+CC = gcc
+CXX = g++
 OUT = imageViewer.o
 LDFLAGS = -g
 CFLAGS = -Werror
@@ -17,7 +18,7 @@ SRCS = ${wildcard *.cpp}
 all: default
 
 default:
-	${CC} ${CFLAGS} ${LDFLAGS} ${SRCS} ${DEPS} -o ${OUT} ${OPENCV}
+	${CXX} ${CFLAGS} ${LDFLAGS} ${SRCS} ${DEPS} -o ${OUT} ${OPENCV}
 imview:
 	g++ imageViewer.cpp -o imageViewer.o `pkg-config opencv4 --cflags --libs`
 clean:
