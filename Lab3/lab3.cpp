@@ -19,41 +19,33 @@ int main(int argc, char *argv[])
 {
 	// convert command line arg to string
 	string mediaName(argv[1]);
-	//string mediaName = "coffees.jpeg";
 
-	// Read the image file
-	Mat image = imread(mediaName);
+	// Read the video file
+	VideoCapture cap(mediaName);
 
 	// Check for failure
-	if (image.empty()) 
+	if (!cap.isOpened()) 
  	{
-		cout << "Could not open or find the image" << endl;
+		cout << "Could not open or find the file" << endl;
 		cin.get(); //wait for any key press
  		return -1;
  	}
+	
+	//Create Mat and read in one frame at a time from video
+	Mat frame;
 
-	//printf("rows: %d, cols: %d, type: %d", image.rows, image.cols, image.type());
+	while(cap.read(frame))
+	{
+	        //convert image to grayscale
+        	Mat grayimage = to442_grayscale(frame);
 
-	//String windowName = "Image"; //Name of the window
+	        //apply sobel filter
+	        Mat sobelimage = to442_sobel(grayimage);
+        	imshow("Sobel", sobelimage);
 
-	//namedWindow(windowName); // Create a window
+        	waitKey(60);
 
-	//show initial image
-	imshow("Color Image", image); // Show our image inside the created window.
-        waitKey(0);
-
-	//convert image to grayscale
-	Mat grayimage = to442_grayscale(image);
-	imshow("Grayscale", grayimage); // Show our image inside the created window.
-	waitKey(0);
-
-	//apply sobel filter
-	Mat sobelimage = to442_sobel(grayimage);
-	imshow("Sobel", sobelimage);
-		
-	waitKey(0); // Wait for any keystroke in the window
-
-	//destroyWindow(windowName); //destroy the created window
+	}
 
 	return 0;
 }
