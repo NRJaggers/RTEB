@@ -1,0 +1,7 @@
+Background
+For this class, we will be learning high-performance programming in the context of the Linux Operating System and POSIX threading (pthreads) frameworks. While a myriad of development environments and threading libraries exist, Linux+pthreads is one of the most commonly used combinations for everything from embedded devices to enterprise grade data centers.
+
+Many SDKs exist to assist in software development (Eclipse, Netbeans, Code Composer Studio, etc.), however, many programmers still rely on a command-line/script-based flow to create and test software. This is the technique we will be using in this class.
+
+Overview
+The purpose of this lab is to get you acquainted with the Linux command prompt. You’ll be learning in the form of a command-line based game that will require you to use advanced command-line techniques to solve puzzles!Essentially, this is a capture the flag game. The instructions below will get you logged into a VM as user “level0”. From there, you’ll need to find a filethat contains a flag{<username for next level>:<passwordforusername for next level>}.Once you’ve found the flag, use the username and password to ssh into the next level!

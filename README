@@ -1,0 +1,18 @@
+Lab decscriptions are in their respective folders. Descriptions originate from professor provided descriptions on canvas.
+
+Lab Summaries:
+
+Lab 1:
+	Practice with terminal and get familiar with linux terminal commands.
+
+Lab 2:
+	Download openCV, read documentation and display image.
+
+Lab 3:
+	Read more documentation about openCV and apply grayscale and sobel filters to a video.
+
+Lab 4:
+	Adjust previously written grayscale and sobel code for multithreading.
+
+Lab 5:
+	 
