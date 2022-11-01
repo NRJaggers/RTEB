@@ -14,7 +14,7 @@ using namespace cv;
 using namespace std;
 
 //defines for any values you want to change easily
-#define THREADCOUNT 1
+#define THREADCOUNT 4
 
 //Create threads, and related pointers
 pthread_t thread[THREADCOUNT];
@@ -26,8 +26,11 @@ void *threadStatus;
 //pthread_attr_init(&attr);
 //pthread_attr_setdetachstate(&attr,  PTHREAD_CREATE_JOINABLE);
 
-//create barriers for threads
-pthread_barrier_t mainBarrier, threadBarrier;
+//create and initialize barriers for threads
+pthread_barrier_t grayBarrier, sobelBarrier;
+
+//pthread_barrier_init(&grayBarrier, NULL, THREADCOUNT);
+//pthread_barrier_init(&sobelBarrier, NULL, THREADCOUNT + 1); 
 
 //create struct to hold arguments to pass to thread function
 struct threadArgs {
@@ -87,7 +90,7 @@ int main(int argc, char *argv[])
 
    
     //create barrier for main thread
-    pthread_barrier_init(&mainBarrier, NULL, THREADCOUNT + 1); 
+    pthread_barrier_init(&sobelBarrier, NULL, THREADCOUNT + 1); 
     
     //create persistent threads
 
@@ -97,18 +100,18 @@ int main(int argc, char *argv[])
     }
 
     //wait for processing of first frame
-    //pthread_barrier_wait(&mainBarrier);
+    //pthread_barrier_wait(&sobelBarrier);
 
-    //while(cap.read(frame))
-    while(true)
+    while(cap.read(frame))
+    //while(true)
 	{
             //grobel(multi_t);    
 
             //after grabbing new frame, wait until processing is finished 
-            //pthread_barrier_wait(&mainBarrier);
+            pthread_barrier_wait(&sobelBarrier);
             
-            cap >>frame;
-            if(frame.empty()){break;}
+            //cap >>frame;
+            //if(frame.empty()){break;}
 
             //show final image
         	imshow("Sobel", sobelimage);
@@ -122,13 +125,21 @@ int main(int argc, char *argv[])
             //wait for image to show and ensure esc is not pressed
             //pthread_barrier_wait(&mainBarrier);
 	}
+    
+    //barrier to let threads finish and exit 
+    pthread_barrier_wait(&sobelBarrier);
+
+    //Close the video file
+    cap.release();
+  
+    //Close all image windows
+    destroyAllWindows();
 
     //Join threads
     for(int i = 0; i < THREADCOUNT; i++)
     {
-        pthread_join(thread[i], &threadStatus);
+        pthread_join(thread[i], NULL);
     }
-
 
 	return 0;
 }
@@ -208,25 +219,30 @@ void to442_sobel(Mat *imgray, Mat *imsobel, int start, int stop)
 void *grobel(void *args)
 {
     //initialize barrier for image processing threads
-    pthread_barrier_init(&threadBarrier, NULL, THREADCOUNT);
+    pthread_barrier_init(&grayBarrier, NULL, THREADCOUNT);
     
     //cast arguments passed in back to struct 
     threadArgs temp = *((threadArgs*)args);
     
-    //create pointer for grayscale image
-    Mat grayTemp(temp.input->rows, temp.input->cols, CV_8UC1);
+    while(!temp.input->empty())
+    {
 
-    //convert to grayscale
-    to442_grayscale(temp.input, &grayTemp, temp.start1, temp.stop1);
+        //create pointer for grayscale image
+        Mat grayTemp(temp.input->rows, temp.input->cols, CV_8UC1);
 
-    //wait for threads to finish grayscale of image
-    pthread_barrier_wait(&threadBarrier);
+        //convert to grayscale
+        to442_grayscale(temp.input, &grayTemp, temp.start1, temp.stop1);
+
+        //wait for threads to finish grayscale of image
+        pthread_barrier_wait(&grayBarrier);
+        
+        //apply sobel filter
+        to442_sobel(&grayTemp, temp.output, temp.start2, temp.stop2);
+
+        //wait for threads to finish sobel filtering the image
+        pthread_barrier_wait(&sobelBarrier);
     
-    //apply sobel filter
-    to442_sobel(&grayTemp, temp.output, temp.start2, temp.stop2);
-
-    //wait for threads to finish sobel filtering the image
-    pthread_barrier_wait(&threadBarrier);
+    }
 
     return NULL;
 }
