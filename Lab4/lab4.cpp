@@ -35,6 +35,7 @@ pthread_barrier_t grayBarrier, sobelBarrier;
 //create struct to hold arguments to pass to thread function
 struct threadArgs {
     Mat *input;
+    Mat *grayTemp;
     Mat *output;
     int start1, stop1, start2, stop2;
 };
@@ -69,6 +70,7 @@ int main(int argc, char *argv[])
 	//Create Mats and read in one frame from video
 	Mat frame; 
     cap.read(frame);
+    Mat grayimage(frame.rows, frame.cols, CV_8UC1);
     Mat sobelimage(frame.rows-2, frame.cols-2, CV_8UC1);
 
     //determine chunck size for threads
@@ -81,6 +83,7 @@ int main(int argc, char *argv[])
     for(int i = 0; i < THREADCOUNT; i++)
     {
         multi_t[i].input  = &frame;
+        multi_t[i].grayTemp = &grayimage;
         multi_t[i].output = &sobelimage;
         multi_t[i].start1 = i*graychunk;
         multi_t[i].stop1  = i*graychunk + graychunk - 1;
@@ -89,8 +92,9 @@ int main(int argc, char *argv[])
     }  
 
    
-    //create barrier for main thread
+    //create barrier for main and threads
     pthread_barrier_init(&sobelBarrier, NULL, THREADCOUNT + 1); 
+    pthread_barrier_init(&grayBarrier, NULL, THREADCOUNT);
     
     //create persistent threads
 
@@ -219,7 +223,7 @@ void to442_sobel(Mat *imgray, Mat *imsobel, int start, int stop)
 void *grobel(void *args)
 {
     //initialize barrier for image processing threads
-    pthread_barrier_init(&grayBarrier, NULL, THREADCOUNT);
+    //pthread_barrier_init(&grayBarrier, NULL, THREADCOUNT);
     
     //cast arguments passed in back to struct 
     threadArgs temp = *((threadArgs*)args);
@@ -228,16 +232,16 @@ void *grobel(void *args)
     {
 
         //create pointer for grayscale image
-        Mat grayTemp(temp.input->rows, temp.input->cols, CV_8UC1);
+        //Mat grayTemp(temp.input->rows, temp.input->cols, CV_8UC1);
 
         //convert to grayscale
-        to442_grayscale(temp.input, &grayTemp, temp.start1, temp.stop1);
+        to442_grayscale(temp.input, temp.grayTemp, temp.start1, temp.stop1);
 
         //wait for threads to finish grayscale of image
         pthread_barrier_wait(&grayBarrier);
-        
+       
         //apply sobel filter
-        to442_sobel(&grayTemp, temp.output, temp.start2, temp.stop2);
+        to442_sobel(temp.grayTemp, temp.output, temp.start2, temp.stop2);
 
         //wait for threads to finish sobel filtering the image
         pthread_barrier_wait(&sobelBarrier);
