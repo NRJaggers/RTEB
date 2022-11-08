@@ -15,4 +15,4 @@ Lab 4:
 	Adjust previously written grayscale and sobel code for multithreading.
 
 Lab 5:
-	 
+    Adjust previously written multithreaded program to use vector instructions and parallelize computation.	 

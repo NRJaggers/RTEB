@@ -1,10 +1,23 @@
 Overview
-You’ve written your Sobel function and have seen how fast it runs. Let’s try to speed it up! In this lab, you’ll be modifying your code so that each quadrant of each frame is processed by a different thread! Your job is to write a program that grabs a frame, splits it into four, has a different thread process (gray+Sobel) each quarter of the image, and displays the result. When finished with one frame, your app should recombine the quarters and display the resulting Sobel image, then grab the next frame and repeat. We'll be running this on the Raspberry Pi since it four cores. For this lab, please use the pthreads library to create and manage your threads.
+Our next step in optimizing the Sobel filter is using SIMD vector instructions to
+speed up our code even more. The ARM cores on the Raspberry PI feature NEON 
+vector/SIMD engines. Since the Raspberry Pi 4 uses Cortex-A72 CPUs based on the 
+Armv8-A architecture, each core supports Neon for Armv8-A (Links to an external site.)
+Each of these Neon engines supports up to 128 bits of data per operand, and can be 
+configured to complete 16 8-bit operations, 8 16-bit operations, 4 32-bit operations, 
+or 2 64-bit operations simultaneously. Use of SIMD can drastically speed up the 
+operation of so-called "embarrassingly parallel" operations on low-precision data, 
+such as image processing. The compiler, however, will not always automatically make 
+use of these instructions (especially if we set the optimization flag to -O0, which 
+we will), so we have to manually tell the compiler where and how to use these.
 
-Hint1: If you simply divide the image into quarters you might find that you have missing lines of pixels along where the images are stitched back together
+While there are many ways to ensure Neon vector instructions are used (see the coding 
+for Neon guide), the mechanisms that give the programmer the most control over how the 
+NEON engine operates are inline assembly commands and compiler intrinsics. Inline 
+assembly allows the programmer to specify exactly how operations should be vectorized, 
+how data should be passed into the vector engine, etc. IntrinsicsLinks to an external 
+site. exist as C-level hints telling the compiler when and where to vectorize.
 
-Hint 2: Try to create a single function that can take in an arbitrarily sized mat and compute gray+Sobel across it. Use this function as the basis of your four threads.
-
-Hint 3: Even though you'll be using 4 threads to process the image, you might find it useful to have a separate thread/separate code that grabs a frame, divvies it up, passes it to the four threads, stitches the results back together, and displays the resulting image.
-
-Hint 4: If you're clever about how you design things, you'll only need to create the four image processing threads once and let them persist. Designing the algorithm this way (although not required) prevents you from having to create and join/destroy four threads per frame.
+For this assignment, I am requiring you to optimize your multi-threaded Sobel 
+implementation to use Neon intrinsics to vectorize both the Sobel and grayscale 
+functions.
