@@ -3,16 +3,16 @@ Lab decscriptions are in their respective folders. Descriptions originate from p
 Lab Summaries:
 
 Lab 1:
-	Practice with terminal and get familiar with linux terminal commands.
+    Practice with terminal and get familiar with linux terminal commands.
 
 Lab 2:
-	Download openCV, read documentation and display image.
+    Download openCV, read documentation and display image.
 
 Lab 3:
-	Read more documentation about openCV and apply grayscale and sobel filters to a video.
+    Read more documentation about openCV and apply grayscale and sobel filters to a video.
 
 Lab 4:
-	Adjust previously written grayscale and sobel code for multithreading.
+    Adjust previously written grayscale and sobel code for multithreading.
 
 Lab 5:
     Adjust previously written multithreaded program to use vector instructions and parallelize computation.	 
