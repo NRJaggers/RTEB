@@ -12,7 +12,7 @@ Mat to442_grayscale(Mat &image);
 Mat to442_sobel(Mat &greyImage);
 
 int main(){
-  VideoCapture cap("Pigs.gif");
+  VideoCapture cap("dab.mp4");
 
   //Breaks if no video is accesible
   if(!cap.isOpened()){
@@ -35,7 +35,7 @@ int main(){
     
     Mat SobelFrame = to442_sobel(BWFrame);
     
-    imshow("Sobel Image", BWFrame);
+    imshow("Sobel Image", SobelFrame);
 
     imshow("Original Image", frame);
 
@@ -67,14 +67,14 @@ Mat to442_grayscale(Mat &image){
   uint8x8_t w_r = vdup_n_u8(77);
   uint8x8_t w_g = vdup_n_u8(150);
   uint8x8_t w_b = vdup_n_u8(29);
-  uint16x8x3_t BGRvector;
+  uint8x8x3_t BGRvector;
   uint16x8_t brightVector;
   
   //for loops iterating thru the image pixel-by-pixel
   for(int index = 0; index<(image.rows*image.cols-1); index+=8, greyPixels+=8, inPixels+=8 * 3){
       //Reading color values into a structure of 3 vectors of 16 8-bit entries
       //vld3 has a stride of 3, automatically separating entries into BGR
-      BGRvector =  vld3_u8((const uint8_t *)inPixels);
+      BGRvector =  vld3_u8(inPixels);
       //Turning BGR vector into brightness by adding them together post-scaling
       brightVector = vmull_u8(BGRvector.val[0], w_r);
       //multiply-accumulate-widen
@@ -101,18 +101,38 @@ Mat to442_sobel(Mat &greyImage){
   Mat SobelFrame(greyImage.rows, greyImage.cols, CV_8UC1);
   uchar *greyPixels = (uchar*) greyImage.data;
   uchar *sobelPixels = (uchar*) SobelFrame.data;
-  uint8x8_t topL, topM, topR, midL,  midR, botL, botM, botR, result;
+  uint8x8_t topL, topM, topR, midL,  midR, botL, botM, botR;
+  uint16x8_t result;
+  uint16x8_t overflow = vdupq_n_u16(255);
   
   for(int ind = greyImage.cols;  ind<((greyImage.rows-1) * greyImage.cols -1); greyPixels+=8, sobelPixels +=8, ind+=8){
 
-    vld1_u8((const uint8_t *)greyPixels);
-    
-  }
+   topL = vld1_u8((const uint8_t *)greyPixels);
+   topM = vld1_u8((const uint8_t *)greyPixels+1);
+   topR = vld1_u8((const uint8_t *)greyPixels+2);
+
+   midL = vld1_u8((const uint8_t *)(greyPixels + greyImage.cols));
+   midR = vld1_u8((const uint8_t *)(greyPixels + greyImage.cols + 2));
    
-      if (total>255)
-	total = 255;
-      
-      sobelPixels[rows*greyImage.cols + cols] = (uchar) total;
+   botL = vld1_u8((const uint8_t *)(greyPixels + 2*greyImage.cols));
+   botM = vld1_u8((const uint8_t *)(greyPixels + 2*greyImage.cols+1));
+   botR = vld1_u8((const uint8_t *)(greyPixels + 2*greyImage.cols+2));
+
+   result = vaddq_u16(
+     vabsq_s16(
+	      vaddq_u16(
+			vsubq_u16(vaddl_u8(topL, topR), vaddl_u8(botL, botR)),
+			vsubq_u16(vshll_n_u8(topM, 1), vshll_n_u8(botM, 1)))), 
+     vabsq_s16(
+	      vaddq_u16(
+			vsubq_u16(vaddl_u8(topR, botR), vaddl_u8(topL, botL)),
+			vsubq_u16(vshll_n_u8(midR, 1), vshll_n_u8(midL,1)))));   
+   
+   
+    
+   result = vminq_u16(result, overflow);
+     
+   vst1_u8(sobelPixels, vmovn_u16(result));
   }
   return SobelFrame;
 }
