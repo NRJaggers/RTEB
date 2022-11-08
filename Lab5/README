@@ -1,0 +1,10 @@
+Overview
+You’ve written your Sobel function and have seen how fast it runs. Let’s try to speed it up! In this lab, you’ll be modifying your code so that each quadrant of each frame is processed by a different thread! Your job is to write a program that grabs a frame, splits it into four, has a different thread process (gray+Sobel) each quarter of the image, and displays the result. When finished with one frame, your app should recombine the quarters and display the resulting Sobel image, then grab the next frame and repeat. We'll be running this on the Raspberry Pi since it four cores. For this lab, please use the pthreads library to create and manage your threads.
+
+Hint1: If you simply divide the image into quarters you might find that you have missing lines of pixels along where the images are stitched back together
+
+Hint 2: Try to create a single function that can take in an arbitrarily sized mat and compute gray+Sobel across it. Use this function as the basis of your four threads.
+
+Hint 3: Even though you'll be using 4 threads to process the image, you might find it useful to have a separate thread/separate code that grabs a frame, divvies it up, passes it to the four threads, stitches the results back together, and displays the resulting image.
+
+Hint 4: If you're clever about how you design things, you'll only need to create the four image processing threads once and let them persist. Designing the algorithm this way (although not required) prevents you from having to create and join/destroy four threads per frame.
