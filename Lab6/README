@@ -1,0 +1,4 @@
+Overview
+This is the final project. By now, you've deepened your understanding of programming on Linux, threading, vectorizing, and profiling. Now it's up to you to further optimize your code. There are many things you can do: you can go back through your code and use a profiler to help you optimize for cache and memory usage, you can refactor how you use threads and pass data to minimize communication latencies and context switches, you can inline functions, you can play with compiler flags (although just setting a compiler flag and calling it a day isn't enough), and you can even try to offload some of your processing to the GPU. How fast can you get it?
+
+Average frames per second for your code before optimization and average frames per second for your code after your optimization. Also, a write-up explaining how you went through and optimized your program and what optimizations proved to have the biggest effects.
